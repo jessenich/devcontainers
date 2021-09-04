@@ -1,0 +1,106 @@
+# Copyright (c) 2021 Jesse N. <jesse@keplerdev.com>
+# This work is licensed under the terms of the MIT license. For a copy, see <https://opensource.org/licenses/MIT>.
+
+name: "Publish Docker Images"
+
+on:
+  push:
+    tags:
+      - "v*"
+
+env:
+  DOCKERHUB_LIBRARY: jessenich91
+  DOCKERHUB_REPO: syslog-mssql-server
+  GHCR_LIBRARY: jessenich
+  GHCR_REPO: syslog-mssql-server
+  GHCR_URI: ghcr.io
+  LABELS: |
+    maintainer=Jesse N. <jesse@keplerdev.com>
+    org.opencontainers.image.source="https://github.com/jessenich/docker-syslog-ng"
+
+jobs:
+  build-docker-image:
+    name: Build ${{ matrix.image }} Image
+    permissions:
+      contents: read
+      packages: write
+
+    strategy:
+      matrix:
+        image: [ "docker-in-docker" ]
+
+    runs-on: "ubuntu-latest"
+    steps:
+      - name: Generate Current Matrix Object
+        id: matrix-object
+        run: |
+          IMAGE_NAME="${{ matrix.image }}"
+          REPO="";
+
+          case "$IMAGE_NAME" in
+            docker-in-docker)
+              REPO="devcontainer-docker-in-docker";;
+          esac
+
+          DOCKER_WORKING_DIR="./containers/$IMAGE_NAME"
+          DOCKERFILE="$DOCKER_WORKING_DIR/Dockerfile"
+          DOCKER_CONTEXT="$DOCKER_WORKING_DIR"
+
+          echo "::set-output name=docker-working-dir::$DOCKER_WORKING_DIR"
+          echo "::set-output name=dockerfile::$DOCKERFILE"
+          echo "::set-output name=context::$DOCKER_CONTEXT"
+          echo "::set-output name=dockerhub-repo::$REPO"
+          echo "::set-output name=ghcr-repo::$REPO"
+
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Cache Docker Layers
+        uses: actions/cache@v2
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ matrix.image }}-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-${{ matrix.image }}
+
+      - name: Login to DockerHub Registry
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Login to ghcr.io Registry
+        uses: docker/login-action@v1
+        with:
+          registry: ${{ env.GHCR_URI }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Get Docker Metadata
+        id: meta
+        uses: docker/metadata-action@v3
+        env:
+          # For consistency with other repository actions, just set env to step output here.
+          DOCKERHUB_REPO: ${{ steps.matrix-object.outputs.dockerhub-repo }}"
+          GHCR_REPO: ${{ steps.matrix-object.outputs.ghcr-repo }}"
+        with:
+          images: |
+            "${{ env.DOCKERHUB_LIBRARY }}/${{ env.DOCKERHUB_REPO }}
+            "${{ env.GHCR_URI }}/${{ env.GHCR_LIBRARY }}/${{ env.GHCR_REPO }}"
+          tags: type=semver,enable=true,pattern={{major}}.{{minor}}.{{patch}}
+          labels: ${{ env.LABELS }}
+          flavor: latest=auto
+
+      - name: Build & Push Latest
+        uses: docker/build-push-action@v2
+        env:
+          DOCKERFILE: ${{ steps.matrix-object.outputs.dockerfile }}
+          CONTEXT: ${{ steps.matrix-object.outputs.context }}
+        with:
+          context: ${{ env.CONTEXT }}
+          file: ${{ env.DOCKERFILE }}
+          labels: "${{ steps.meta.outputs.labels }}"
+          build-args: "VARIANT=${{ matrix.sql-variant }}-latest"
+          pull: true
+          push: true
+          tags: "${{ steps.meta.outputs.tags }}"
