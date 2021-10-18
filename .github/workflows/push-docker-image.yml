@@ -84,6 +84,7 @@ jobs:
           DOCKERHUB_REPO: ${{ steps.matrix-object.outputs.dockerhub-repo }}"
           GHCR_REPO: ${{ steps.matrix-object.outputs.ghcr-repo }}"
         with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           images: |
             "${{ env.DOCKERHUB_LIBRARY }}/${{ env.DOCKERHUB_REPO }}
             "${{ env.GHCR_URI }}/${{ env.GHCR_LIBRARY }}/${{ env.GHCR_REPO }}"
