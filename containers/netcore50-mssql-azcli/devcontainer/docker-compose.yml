@@ -1,0 +1,20 @@
+services:
+  app:
+    build:
+      args:
+        NODE_VERSION: none
+        VARIANT: 5.0-focal
+      context: .
+      dockerfile: Dockerfile
+      image: devcontainer-netcore:net5.0-focal
+    command: sleep infinity
+    network_mode: service:db
+    volumes:
+      - ..:/workspace:cached
+  db:
+    environment:
+      ACCEPT_EULA: 'Y'
+      SA_PASSWORD: P@ssw0rd
+    image: mcr.microsoft.com/mssql/server:2019-latest
+    restart: unless-stopped
+version: '3.8'

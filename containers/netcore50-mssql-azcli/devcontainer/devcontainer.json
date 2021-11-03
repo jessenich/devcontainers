@@ -1,0 +1,126 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the README at:
+// https://github.com/microsoft/vscode-dev-containers/tree/v0.191.0/containers/dotnetcore
+{
+	"name": "C# (.NET Core 5.0) + MSSQL Dev Container",
+    "dockerComposeFile": "docker-compose.yml",
+    "service": "app1",
+    "workspaceFolder": "/workspace/app1",
+
+
+	"build": {
+		"dockerfile": "Dockerfile",
+		"args": {
+			// Update 'VARIANT' to pick a .NET Core version: 2.1, 3.1, 5.0
+			"VARIANT": "5.0",
+			"NODE_VERSION": "none",
+			"INSTALL_AZURE_CLI": "true"
+		}
+	},
+
+	// Set *default* container specific settings.json values on container create.
+	"settings": {
+		"mssql.connections": [
+			{
+				"server": "localhost,1433",
+				"database": "database1",
+				"authenticationType": "SqlLogin",
+				"user": "sa",
+				"password": "P@ssw0rd",
+				"emptyPasswordInput": false,
+				"savePassword": true,
+				"profileName": "mssql-container"
+			}
+		]
+	},
+
+	// Add the IDs of extensions you want installed when the container is created.
+	"extensions": [
+		"ms-dotnettools.csharp",
+		"ms-mssql.mssql",
+		"piotrpalarz.vscode-gitignore-generator",
+		"ms-vscode.azure-account",
+		"ms-vscode.azure-arm-resource",
+		"ms-vscode.azure-cosmos",
+		"ms-vscode.azure-devops",
+		"ms-vscode.azure-functions",
+		"ms-vscode.azure-keyvault",
+		"ms-vscode.azure-pipelines",
+		"ms-vscode.azure-remote-explorer",
+		"ms-vscode.azure-resource",
+		"ms-vscode.azure-storage",
+		"ms-vscode.azurecli",
+		"ms-vscode.csharp",
+		"ms-vscode.docker",
+		"ms-vscode.git",
+		"ms-dotnettools.dotnet-interactive-vscode",
+		"formulahendry.dotnet"
+	],
+
+	// Use 'forwardPorts' to make a list of ports inside the container available locally.
+	"forwardPorts": [
+		1433,
+		1434,
+		5000,
+		5001
+	],
+
+	// Use 'portsAttributes' to set default properties for specific forwarded ports. More info: https://code.visualstudio.com/docs/remote/devcontainerjson-reference.
+	"portsAttributes": {
+		"1433": {
+			"protocol": "tcp",
+			"external": {
+				"port": 1433,
+				"name": "mssql-container"
+			}
+		},
+		"1434": {
+			"protocol": "udp",
+			"external": {
+				"port": 1434,
+				"name": "mssql-container"
+			}
+		},
+		"5000": {
+			"label": "HTTP Primary Server Port",
+			"onAutoForward": "notify"
+		},
+        "5001": {
+            "label": "HTTPS Primary Server Port",
+            "onAutoForward": "notify"
+        }
+	},
+
+	// Use 'otherPortsAttributes' to configure any ports that aren't configured using 'portsAttributes'.
+	// "otherPortsAttributes": {
+	// 		"onAutoForward": "silent"
+	// },
+
+	// [Optional] To reuse of your local HTTPS dev cert:
+	//
+	// 1. Export it locally using this command:
+	//    * Windows PowerShell:
+	//        dotnet dev-certs https --trust; dotnet dev-certs https -ep "$env:USERPROFILE/.aspnet/https/aspnetapp.pfx" -p "SecurePwdGoesHere"
+	//    * macOS/Linux terminal:
+	//        dotnet dev-certs https --trust; dotnet dev-certs https -ep "${HOME}/.aspnet/https/aspnetapp.pfx" -p "SecurePwdGoesHere"
+	//
+	// 2. Uncomment these 'remoteEnv' lines:
+	//    "remoteEnv": {
+	// 	      "ASPNETCORE_Kestrel__Certificates__Default__Password": "SecurePwdGoesHere",
+	//        "ASPNETCORE_Kestrel__Certificates__Default__Path": "/home/vscode/.aspnet/https/aspnetapp.pfx",
+	//    },
+	//
+	// 3. Do one of the following depending on your scenario:
+	//    * When using GitHub Codespaces and/or Remote - Containers:
+	//      1. Start the container
+	//      2. Drag ~/.aspnet/https/aspnetapp.pfx into the root of the file explorer
+	//      3. Open a terminal in VS Code and run "mkdir -p /home/vscode/.aspnet/https && mv aspnetapp.pfx /home/vscode/.aspnet/https"
+	//
+	//    * If only using Remote - Containers with a local container, uncomment this line instead:
+	//      "mounts": [ "source=${env:HOME}${env:USERPROFILE}/.aspnet/https,target=/home/vscode/.aspnet/https,type=bind" ],
+
+	// Use 'postCreateCommand' to run commands after the container is created.
+	//"postCreateCommand": "dotnet restore",
+
+	// Comment this out to connect as a root instead. More info: https://aka.ms/vscode-remote/containers/non-root.
+	"remoteUser": "jessenich"
+}
