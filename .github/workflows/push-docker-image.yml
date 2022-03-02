@@ -53,7 +53,7 @@ jobs:
           echo "::set-output name=ghcr-repo::$REPO"
 
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Cache Docker Layers
         uses: actions/cache@v2
