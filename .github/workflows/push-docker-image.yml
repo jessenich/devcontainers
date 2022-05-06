@@ -78,7 +78,7 @@ jobs:
 
       - name: Get Docker Metadata
         id: meta
-        uses: docker/metadata-action@v3
+        uses: docker/metadata-action@v4
         env:
           # For consistency with other repository actions, just set env to step output here.
           DOCKERHUB_REPO: ${{ steps.matrix-object.outputs.dockerhub-repo }}"
